@@ -1,5 +1,5 @@
 #!/bin/bash
-# Скипт создание службы эмуляции NMEA на базе скрипта NmeaServer.py
+# Скипт установки службы эмуляции NMEA на базе скрипта NmeaServer.py
 # Порт сервера NMEA определяется переменной PORT, SERVER_SCRIPT - путь до скрипта NmeaServer.py
 
 if [ "$(id -u)" != 0 ]; then

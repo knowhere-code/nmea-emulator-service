@@ -27,7 +27,7 @@ else:
     
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, filename=LOG_PATH, format='%(asctime)s %(levelname)s:%(message)s')
-DEFAULT_PORT = 5007
+DEFAULT_PORT = 50005
 INTERVAL_TX_PACKET = 1 #sec
 
 
