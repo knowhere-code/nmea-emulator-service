@@ -1,6 +1,6 @@
 # NMEA EMULATOR SERVICE
 
-Сервис эмулирует работу NMEA протокола. Генерируются RMC и GSA пакеты. Сервис поддерживает работу одновременно с множеством TCP клиентов.
+Сервис эмулирует работу NMEA протокола. Эмулируются RMC и GSA пакеты. Сервис поддерживает работу одновременно с множеством TCP клиентов.
 
 ## Installation
 
@@ -12,12 +12,16 @@ sudo apt install pip3
 sudo pip3 intall pynmea2
 ```
 
-Установка службы systemd.unit.
-
-Копируем файлы install_nmea_srv.sh, NmeaServer.py в папку от куда служба NMEA EMULATOR SERVICE будет запускаться и запускаем скрипт с правами sudo
+Запуск сервиса в консольном режиме:
 
 ```sh
-install_nmea_srv.sh
+sudo python3 NmeaServer.py --rmc --gsa --port 50005
+```
+
+Установка сервиса как демона systemd.unit
+
+```sh
+sudo ./install_nmea_srv.sh
 ```
 
 Сервис будет доступен на сокете 127.0.0.1:50005
@@ -43,8 +47,4 @@ options:
   -s {A,V}, --status {A,V}                       Генерация пакетов RMC c A - валидным статусом, V - невалидный статус  
 
   -i {GP,GN,GL,BD,GA}, --id {GP,GN,GL,BD,GA}     Индификатор GPS системы по умолчанию (GP)  
-
-License
-MIT
-
-Free Software, Hell Yeah!
+  
