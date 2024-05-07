@@ -209,9 +209,8 @@ if __name__ == '__main__':
         while True:
             if not thread_ns.is_alive():
                 break
-            if is_win_os():
-                if ord(getch()) == 27:  #ESC
-                    break
+            if is_win_os() and ord(getch()) == 27:  #ESC:
+                break
             signal.signal(signal.SIGINT, exit_gracefully)
             time.sleep(0.1)
     except Exception as msg:
