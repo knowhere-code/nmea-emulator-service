@@ -12,15 +12,13 @@ import select
 import signal
 from sys import platform
 
+IS_WIN = False
+
 if "win" in platform:
     from msvcrt import getch
+    IS_WIN = True
 
-def is_win_os():
-    if "win" in platform:
-        return True
-    return False
-
-if is_win_os():
+if IS_WIN:
     LOG_PATH = "nmea.log"
 else:
     LOG_PATH = "/var/log/nmea.log"
@@ -196,7 +194,7 @@ def exit_gracefully(signal, frame):
     
     
 if __name__ == '__main__':
-    if is_win_os():
+    if IS_WIN:
         print('Press ESC to exit')
     else:
         print('Press CTRL+C to exit')
@@ -209,7 +207,7 @@ if __name__ == '__main__':
         while True:
             if not thread_ns.is_alive():
                 break
-            if is_win_os() and ord(getch()) == 27:  #ESC:
+            if IS_WIN and ord(getch()) == 27:  #ESC:
                 break
             signal.signal(signal.SIGINT, exit_gracefully)
             time.sleep(0.1)
