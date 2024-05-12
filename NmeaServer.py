@@ -4,6 +4,7 @@ import argparse
 import datetime
 import socket
 import sys
+import os
 import time
 import threading
 import pynmea2
@@ -12,6 +13,8 @@ import select
 import signal
 from sys import platform
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 IS_WIN = False
 
 if "win" in platform:
@@ -19,10 +22,10 @@ if "win" in platform:
     IS_WIN = True
 
 if IS_WIN:
-    LOG_PATH = "nmea.log"
+    LOG_PATH = "f'{BASE_DIR}/nmea.log"
 else:
     LOG_PATH = "/var/log/nmea.log"
-    
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, filename=LOG_PATH, format='%(asctime)s %(levelname)s:%(message)s')
 DEFAULT_PORT = 5007
@@ -191,7 +194,8 @@ def create_parser():
 
 def exit_gracefully(signal, frame):
     sys.exit(0)
-    
+
+signal.signal(signal.SIGINT, exit_gracefully) 
     
 if __name__ == '__main__':
     if IS_WIN:
@@ -209,7 +213,6 @@ if __name__ == '__main__':
                 break
             if IS_WIN and ord(getch()) == 27:  #ESC:
                 break
-            signal.signal(signal.SIGINT, exit_gracefully)
             time.sleep(0.1)
     except Exception as msg:
         print2(msg, debug=False, error=True)
