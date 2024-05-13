@@ -7,9 +7,9 @@ if [ "$(id -u)" != 0 ]; then
   exit 1
 fi
 
-if [ ! -f ./NmeaServer.sh ]
+if [ ! -f ./NmeaServer.py ]
 then
-  echo "Not found NmeaServer.sh script!"
+  echo "Not found NmeaServer.py script!"
   exit 1
 fi
 
