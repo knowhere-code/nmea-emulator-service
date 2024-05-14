@@ -22,7 +22,7 @@ if "win" in platform:
     IS_WIN = True
 
 if IS_WIN:
-    LOG_PATH = "f'{BASE_DIR}/nmea.log"
+    LOG_PATH = f"{BASE_DIR}/nmea.log"
 else:
     LOG_PATH = "/var/log/nmea.log"
 
@@ -76,8 +76,8 @@ class NMEAServer():
                 sock.listen(self._clients)
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.setblocking(0)
-            except socket.error as msg:
-                print2(msg, debug=False, error=True)
+            except socket.error as e:
+                print2(e, debug=False, error=True)
                 return 1
             print2("NMEA server started on port {}".format(self._port))
             while True:
@@ -85,13 +85,13 @@ class NMEAServer():
                 if ready[0]:
                     conn, addr = sock.accept()
                     conn.settimeout(self._timeout)
-                    conn_msg = "Connection detected {}".format(addr)
+                    conn_msg = f"Connection detected {addr}"
                     print2(conn_msg)
                     client = ClientClass(conn, addr, self._timeout, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id)
                     try:
                         threading.Thread(target=client.process).start()
-                    except Exception as msg:
-                        print2(msg, debug=False, error=True)
+                    except Exception as e:
+                        print2(e, debug=False, error=True)
 
 class ClientClass():
     _clients = set()
@@ -101,7 +101,7 @@ class ClientClass():
         self._addr = addr
         self._port = addr[1]
         self._ip = addr[0]
-        self._msg = ''
+        self._err = ''
         self._timeout = timeout
         self.rmc = rmc
         self.gsa = gsa
@@ -112,7 +112,7 @@ class ClientClass():
         print2(msg_diag)
 
     @classmethod
-    def _get_count_clients(cls):
+    def _get_cnt_clients(cls):
         return len(cls._clients)
     
     @classmethod
@@ -125,7 +125,7 @@ class ClientClass():
     
     @classmethod
     def _get_diagnostic(cls):
-        return "Total clients: {} {}".format(cls._get_count_clients(), cls._clients)
+        return f"Total clients: {cls._get_cnt_clients()} {cls._clients}"
 
     def _gen_rmc(self):
         time_t = time.gmtime()
@@ -157,21 +157,20 @@ class ClientClass():
     def _send_packs(self):
         nmea_packs = self._gen_packs(rmc=self.rmc, gsa=self.gsa)
         self._conn.sendall(nmea_packs)
-        print("{}\t{}:{} <- RX: {}".format(datetime.datetime.now(), self._ip, self._port, nmea_packs))
+        print(f"{datetime.datetime.now()}\t {self._ip}:{self._port} <-- RX: {nmea_packs}")
 
     def process(self):
         try:
             while True:
                 threading.Timer(INTERVAL_TX_PACKET, self._send_packs).run()               
-        except socket.error as msg:
-            self._msg = msg
+        except socket.error as e:
+            self._err = e
         finally:
             self._close()
 
     def _close(self):
         # if not self.conn._closed:
-        msg = "{}:{} Client connection closed ({})".format(self._ip, self._port,
-                                                             self._msg)
+        msg = f"{self._ip}:{self._port} Client connection closed ({self._err})"
         print2(msg)                                                   
         self._conn.close()
         ClientClass._del_client(self._addr)
@@ -214,8 +213,8 @@ if __name__ == '__main__':
             if IS_WIN and ord(getch()) == 27:  #ESC:
                 break
             time.sleep(0.1)
-    except Exception as msg:
-        print2(msg, debug=False, error=True)
+    except Exception as e:
+        print2(e, debug=False, error=True)
     finally:
         print2("NMEA server stopped!")
     
