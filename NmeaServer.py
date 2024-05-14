@@ -71,7 +71,7 @@ class NMEAServer():
     def run(self):
         with socket.socket() as sock:
             try:
-                print2("Try start NMEA server on port {}...".format(self._port))
+                print2(f"Try start NMEA server on port {self._port}...")
                 sock.bind((self._host, self._port))
                 sock.listen(self._clients)
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -79,14 +79,13 @@ class NMEAServer():
             except socket.error as e:
                 print2(e, debug=False, error=True)
                 return 1
-            print2("NMEA server started on port {}".format(self._port))
+            print2(f"NMEA server started on port {self._port}")
             while True:
                 ready = select.select([sock], [], [], 1)
                 if ready[0]:
                     conn, addr = sock.accept()
                     conn.settimeout(self._timeout)
-                    conn_msg = f"Connection detected {addr}"
-                    print2(conn_msg)
+                    print2(f"Connection detected {addr}")
                     client = ClientClass(conn, addr, self._timeout, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id)
                     try:
                         threading.Thread(target=client.process).start()
