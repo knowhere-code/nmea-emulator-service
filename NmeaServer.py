@@ -13,13 +13,13 @@ import select
 import signal
 from sys import platform
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 IS_WIN = False
 
 if "win" in platform:
     from msvcrt import getch
     IS_WIN = True
+    
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 if IS_WIN:
     LOG_PATH = f"{BASE_DIR}/nmea.log"
@@ -28,25 +28,9 @@ else:
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, filename=LOG_PATH, format='%(asctime)s %(levelname)s:%(message)s')
+
 DEFAULT_PORT = 5007
 INTERVAL_TX_PACKET = 1 #sec
-
-
-def bytes_to_str(input_data):
-    try:
-        is_bytes = isinstance(input_data, bytes)
-        is_byte_list = isinstance(input_data, bytearray)
-
-        if not is_bytes and not is_byte_list:
-            raise Exception("Входные данные не являются байт строкой/массив")
-        s = ""
-        for b in input_data:
-            s += "_{0:02X}".format(b)
-        return s.lstrip('_')
-    except Exception as e:
-        print(e)
-        logger.error(e)
-
 
 def print2(value, debug=True, error=False):
     print(value)
@@ -55,7 +39,6 @@ def print2(value, debug=True, error=False):
     if error:
         logger.error(value)
     
-
 class NMEAServer():
 
     def __init__(self, host='', port=DEFAULT_PORT, clients=1000, timeout=1, rmc=True, gsa=False, status="A", id="GP"):
