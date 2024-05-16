@@ -89,9 +89,8 @@ class ClientClass():
         self.gsa = gsa
         self.status = status
         self.id = id
-        ClientClass._add_client(self._addr) 
-        msg_diag = ClientClass._get_diagnostic()
-        print2(msg_diag)
+        ClientClass._add_client(self._addr)
+        print2(ClientClass._get_diagnostic())
 
     @classmethod
     def _get_cnt_clients(cls):
@@ -100,10 +99,15 @@ class ClientClass():
     @classmethod
     def _add_client(cls, addr):
         cls._clients.add(addr) 
+        return cls._get_cnt_clients()
         
     @classmethod
     def _del_client(cls, addr):
-        cls._clients.remove(addr)
+        try:
+            cls._clients.remove(addr)
+        except KeyError as e:
+            print2(e, debug=False, error=True)
+        return cls._get_cnt_clients() 
     
     @classmethod
     def _get_diagnostic(cls):
