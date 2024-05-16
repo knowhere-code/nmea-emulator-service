@@ -38,14 +38,24 @@ def print2(value, debug=True, error=False):
         logger.debug(value)
     if error:
         logger.error(value)
+ 
+class ClientSet(set):
+    
+    def  __str__ (self):
+        value = ""
+        if len(self) == 0:
+            return value
+        for v in self:
+            value += f" [{v[0]}:{v[1]}]"
+        return value.lstrip(" ")
+            
     
 class NMEAServer():
 
-    def __init__(self, host='', port=DEFAULT_PORT, clients=1000, timeout=1, rmc=True, gsa=False, status="A", id="GP"):
+    def __init__(self, host='', port=DEFAULT_PORT, clients=1000, rmc=True, gsa=False, status="A", id="GP"):
         self._port = port
         self._host = host
         self._clients = clients
-        self._timeout = timeout
         self._status = status
         self._rmc = rmc
         self._gsa = gsa
@@ -67,24 +77,22 @@ class NMEAServer():
                 ready = select.select([sock], [], [], 1)
                 if ready[0]:
                     conn, addr = sock.accept()
-                    conn.settimeout(self._timeout)
                     print2(f"Connection detected {addr}")
-                    client = ClientClass(conn, addr, self._timeout, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id)
+                    client = ClientClass(conn, addr, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id)
                     try:
                         threading.Thread(target=client.process).start()
                     except Exception as e:
                         print2(e, debug=False, error=True)
 
 class ClientClass():
-    _clients = set()
+    _clients = ClientSet()
 
-    def __init__(self, conn, addr, timeout=30, rmc=True, gsa=False, status="A", id="GP"):
+    def __init__(self, conn, addr, rmc=True, gsa=False, status="A", id="GP"):
         self._conn = conn
         self._addr = addr
         self._port = addr[1]
         self._ip = addr[0]
         self._err = None
-        self._timeout = timeout
         self.rmc = rmc
         self.gsa = gsa
         self.status = status
@@ -165,7 +173,6 @@ class ClientClass():
 def create_parser():
     parser = argparse.ArgumentParser(description="NMEA protocol emulation of RMC и GSA packages")
     parser.add_argument('-p', '--port', required=False, type=int, default=DEFAULT_PORT)
-    parser.add_argument('-t', '--timeout', required=False, type=int, default=5)
     parser.add_argument('-r', '--rmc', action='store_true', required=False)
     parser.add_argument('-g', '--gsa', action='store_true', required=False)
     parser.add_argument('-s', '--status', choices=["A", "V"], required=False, type=str, default="A")
@@ -190,7 +197,7 @@ if __name__ == '__main__':
     parser = create_parser()
     arg = parser.parse_args(sys.argv[1:])
     try:
-        ns = NMEAServer(port=arg.port, timeout=arg.timeout, rmc=arg.rmc, gsa=arg.gsa, status=arg.status, id=arg.id)
+        ns = NMEAServer(port=arg.port, rmc=arg.rmc, gsa=arg.gsa, status=arg.status, id=arg.id)
         thread_ns = threading.Thread(target=ns.run, daemon=True)
         thread_ns.start()
         while True:
