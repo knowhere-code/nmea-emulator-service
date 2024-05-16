@@ -52,7 +52,7 @@ class ClientSet(set):
     
 class NMEAServer():
 
-    def __init__(self, host='', port=DEFAULT_PORT, clients=1000, rmc=True, gsa=False, status="A", id="GP"):
+    def __init__(self, host='', port=DEFAULT_PORT, clients=100, rmc=True, gsa=False, status="A", id="GP"):
         self._port = port
         self._host = host
         self._clients = clients
@@ -78,13 +78,13 @@ class NMEAServer():
                 if ready[0]:
                     conn, addr = sock.accept()
                     print2(f"Connection detected {addr}")
-                    client = ClientClass(conn, addr, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id)
+                    client = Client(conn, addr, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id)
                     try:
                         threading.Thread(target=client.process).start()
                     except Exception as e:
                         print2(e, debug=False, error=True)
 
-class ClientClass():
+class Client():
     _clients = ClientSet()
 
     def __init__(self, conn, addr, rmc=True, gsa=False, status="A", id="GP"):
@@ -97,8 +97,8 @@ class ClientClass():
         self.gsa = gsa
         self.status = status
         self.id = id
-        ClientClass._add_client(self._addr)
-        print2(ClientClass._get_diagnostic())
+        Client._add_client(self._addr)
+        print2(Client._get_diagnostic())
 
     @classmethod
     def _get_cnt_clients(cls):
@@ -163,12 +163,11 @@ class ClientClass():
             self._close()
 
     def _close(self):
-        # if not self.conn._closed:
         msg = f"{self._ip}:{self._port} Client connection closed ({self._err})"
         print2(msg)                                                   
         self._conn.close()
-        ClientClass._del_client(self._addr)
-        print2(ClientClass._get_diagnostic())
+        Client._del_client(self._addr)
+        print2(Client._get_diagnostic())
 
 def create_parser():
     parser = argparse.ArgumentParser(description="NMEA protocol emulation of RMC и GSA packages")
