@@ -77,7 +77,7 @@ class NMEAServer():
                 ready = select.select([sock], [], [], 1)
                 if ready[0]:
                     conn, addr = sock.accept()
-                    print2(f"Connection detected {addr}")
+                    print2(f"Connection detected {addr[0]}:{addr[1]}")
                     client = NMEAClient(conn, addr, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id)
                     try:
                         threading.Thread(target=client.process).start()
