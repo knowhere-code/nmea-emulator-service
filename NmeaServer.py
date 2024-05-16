@@ -78,13 +78,13 @@ class NMEAServer():
                 if ready[0]:
                     conn, addr = sock.accept()
                     print2(f"Connection detected {addr}")
-                    client = Client(conn, addr, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id)
+                    client = NMEAClient(conn, addr, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id)
                     try:
                         threading.Thread(target=client.process).start()
                     except Exception as e:
                         print2(e, debug=False, error=True)
 
-class Client():
+class NMEAClient():
     _clients = ClientSet()
 
     def __init__(self, conn, addr, rmc=True, gsa=False, status="A", id="GP"):
@@ -97,8 +97,8 @@ class Client():
         self.gsa = gsa
         self.status = status
         self.id = id
-        Client._add_client(self._addr)
-        print2(Client._get_diagnostic())
+        NMEAClient._add_client(self._addr)
+        print2(NMEAClient._get_diagnostic())
 
     @classmethod
     def _get_cnt_clients(cls):
@@ -166,8 +166,8 @@ class Client():
         msg = f"{self._ip}:{self._port} Client connection closed ({self._err})"
         print2(msg)                                                   
         self._conn.close()
-        Client._del_client(self._addr)
-        print2(Client._get_diagnostic())
+        NMEAClient._del_client(self._addr)
+        print2(NMEAClient._get_diagnostic())
 
 def create_parser():
     parser = argparse.ArgumentParser(description="NMEA protocol emulation of RMC и GSA packages")
