@@ -163,7 +163,7 @@ class NMEAClient():
             self._close()
 
     def _close(self):
-        msg = f"{self._ip}:{self._port} Client connection closed ({self._err})"
+        msg = f"Client [{self._ip}:{self._port}] connection closed ({self._err})"
         print2(msg)                                                   
         self._conn.close()
         NMEAClient._del_client(self._addr)
