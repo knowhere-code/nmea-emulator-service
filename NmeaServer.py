@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 import argparse
 import datetime
 import socket
@@ -14,6 +13,8 @@ import signal
 from sys import platform
 
 IS_WIN = False
+DEFAULT_PORT = 5007
+INTERVAL_TX_PACKET = 1 #sec
 
 if "win" in platform:
     from msvcrt import getch
@@ -28,9 +29,6 @@ else:
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, filename=LOG_PATH, format='%(asctime)s %(levelname)s:%(message)s')
-
-DEFAULT_PORT = 5007
-INTERVAL_TX_PACKET = 1 #sec
 
 def print2(value, debug=True, error=False):
     print(value)
@@ -49,7 +47,6 @@ class ClientSet(set):
             value += f" [{v[0]}:{v[1]}]"
         return value.lstrip(" ")
             
-    
 class NMEAServer():
 
     def __init__(self, host='', port=DEFAULT_PORT, clients=100, rmc=True, gsa=False, status="A", id="GP"):
@@ -98,7 +95,7 @@ class NMEAClient():
         self.status = status
         self.id = id
         NMEAClient._add_client(self._addr)
-        print2(NMEAClient._get_diagnostic())
+        print2(NMEAClient._get_total())
 
     @classmethod
     def _get_cnt_clients(cls):
@@ -118,7 +115,7 @@ class NMEAClient():
         return cls._get_cnt_clients() 
     
     @classmethod
-    def _get_diagnostic(cls):
+    def _get_total(cls):
         return f"Total clients: {cls._get_cnt_clients()} {cls._clients}"
 
     def _gen_rmc(self):
@@ -167,7 +164,7 @@ class NMEAClient():
         print2(msg)                                                   
         self._conn.close()
         NMEAClient._del_client(self._addr)
-        print2(NMEAClient._get_diagnostic())
+        print2(NMEAClient._get_total())
 
 def create_parser():
     parser = argparse.ArgumentParser(description="NMEA protocol emulation of RMC и GSA packages")
