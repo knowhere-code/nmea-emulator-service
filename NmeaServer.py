@@ -14,12 +14,12 @@ from sys import platform
 
 IS_WIN = False
 DEFAULT_PORT = 5007
-INTERVAL_TX_PACKET = 1 #sec
+INTERVAL_TX_PACKET = 1  # sec
 
 if "win" in platform:
     from msvcrt import getch
     IS_WIN = True
-    
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 if IS_WIN:
@@ -30,24 +30,27 @@ else:
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, filename=LOG_PATH, format='%(asctime)s %(levelname)s:%(message)s')
 
+
 def print2(value, debug=True, error=False):
     print(value)
     if debug:
         logger.debug(value)
     if error:
         logger.error(value)
- 
+
+
 class ClientSet(set):
-    
-    def  __str__ (self):
+
+    def __str__(self):
         value = ""
         if len(self) == 0:
             return value
         for v in self:
             value += f" [{v[0]}:{v[1]}]"
         return value.lstrip(" ")
-            
-class NMEAServer():
+
+
+class NMEAServer:
 
     def __init__(self, host='', port=DEFAULT_PORT, clients=100, rmc=True, gsa=False, status="A", id="GP"):
         self._port = port
@@ -65,7 +68,7 @@ class NMEAServer():
                 sock.bind((self._host, self._port))
                 sock.listen(self._clients)
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                sock.setblocking(0)
+                sock.setblocking(False)
             except socket.error as e:
                 print2(e, debug=False, error=True)
                 return 1
@@ -81,7 +84,8 @@ class NMEAServer():
                     except Exception as e:
                         print2(e, debug=False, error=True)
 
-class NMEAClient():
+
+class NMEAClient:
     _clients = ClientSet()
 
     def __init__(self, conn, addr, rmc=True, gsa=False, status="A", id="GP"):
@@ -100,20 +104,20 @@ class NMEAClient():
     @classmethod
     def _get_cnt_clients(cls):
         return len(cls._clients)
-    
+
     @classmethod
     def _add_client(cls, addr):
-        cls._clients.add(addr) 
+        cls._clients.add(addr)
         return cls._get_cnt_clients()
-        
+
     @classmethod
     def _del_client(cls, addr):
         try:
             cls._clients.remove(addr)
         except KeyError as e:
             print2(e, debug=False, error=True)
-        return cls._get_cnt_clients() 
-    
+        return cls._get_cnt_clients()
+
     @classmethod
     def _get_total(cls):
         return f"Total clients: {cls._get_cnt_clients()} {cls._clients}"
@@ -126,13 +130,14 @@ class NMEAClient():
         # $GPRMC,083806.000,A,4916.37598,N,04305.35724,E,0.1,0.0,130519,0.0,W*70/r/n
         #        [время]                                         [дата]
         tmp = pynmea2.RMC(self.id, 'RMC', (
-        hhmmssss, status, '4916.45', 'N', '12311.12', 'W', '173.8', '231.8', ddmmyy, '005.2', 'W'))
+            hhmmssss, status, '4916.45', 'N', '12311.12', 'W', '173.8', '231.8', ddmmyy, '005.2', 'W'))
         rmc_pack = bytes(str(tmp).strip() + "\r\n", 'ascii')
         return rmc_pack
 
     def _gen_gsa(self):
         # $GNGSA,A,3,10,16,18,20,26,27,,,,,,,4.8,2.0,4.3,1*FF/r/n 
-        tmp = pynmea2.GSA(self.id, 'GSA', ('A','3','10','16','18','20','26','27','','','','','','','4.8','2.0','4.3'))
+        tmp = pynmea2.GSA(self.id, 'GSA',
+                          ('A', '3', '10', '16', '18', '20', '26', '27', '', '', '', '', '', '', '4.8', '2.0', '4.3'))
         gsa_pack = bytes(str(tmp).strip() + "\r\n", 'ascii')
         return gsa_pack
 
@@ -153,7 +158,7 @@ class NMEAClient():
     def process(self):
         try:
             while True:
-                threading.Timer(INTERVAL_TX_PACKET, self._send_packs).run()               
+                threading.Timer(INTERVAL_TX_PACKET, self._send_packs).run()
         except socket.error as e:
             self._err = e
         finally:
@@ -161,10 +166,11 @@ class NMEAClient():
 
     def _close(self):
         msg = f"Client [{self._ip}:{self._port}] connection closed ({self._err})"
-        print2(msg)                                                   
+        print2(msg)
         self._conn.close()
         NMEAClient._del_client(self._addr)
         print2(NMEAClient._get_total())
+
 
 def create_parser():
     parser = argparse.ArgumentParser(description="NMEA protocol emulation of RMC и GSA packages")
@@ -172,19 +178,17 @@ def create_parser():
     parser.add_argument('-r', '--rmc', action='store_true', required=False)
     parser.add_argument('-g', '--gsa', action='store_true', required=False)
     parser.add_argument('-s', '--status', choices=["A", "V"], required=False, type=str, default="A")
-    # GP – только GPS - GPGGA
-    # GL – только ГЛОНАСС - GLGGA
-    # BD – только BeiDou - BDGGA
-    # GA – только GALILEO GAGGA
-    # GN – мультисистемное решение – GNGGA
+    # GP – GPS; GL – ГЛОНАСС; BD – BeiDou; GA – GALILEO; GN – мультисистемное решение
     parser.add_argument('-i', '--id', choices=["GP", "GN", "GL", "BD", "GA"], required=False, type=str, default="GP")
     return parser
+
 
 def exit_gracefully(signal, frame):
     sys.exit(0)
 
-signal.signal(signal.SIGINT, exit_gracefully) 
-    
+
+signal.signal(signal.SIGINT, exit_gracefully)
+
 if __name__ == '__main__':
     if IS_WIN:
         print('Press ESC to exit')
@@ -199,11 +203,10 @@ if __name__ == '__main__':
         while True:
             if not thread_ns.is_alive():
                 break
-            if IS_WIN and ord(getch()) == 27:  #ESC:
+            if IS_WIN and ord(getch()) == 27:  # ESC:
                 break
             time.sleep(0.1)
     except Exception as e:
         print2(e, debug=False, error=True)
     finally:
         print2("NMEA server stopped!")
-    
