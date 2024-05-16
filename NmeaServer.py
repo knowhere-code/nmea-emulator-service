@@ -83,7 +83,7 @@ class ClientClass():
         self._addr = addr
         self._port = addr[1]
         self._ip = addr[0]
-        self._err = ''
+        self._err = None
         self._timeout = timeout
         self.rmc = rmc
         self.gsa = gsa
