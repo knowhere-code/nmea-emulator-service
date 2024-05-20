@@ -10,13 +10,13 @@ import pynmea2
 import logging
 import select
 import signal
-from sys import platform
+
 
 IS_WIN = False
 DEFAULT_PORT = 5007
 INTERVAL_TX_PACKET = 1  # sec
 
-if "win" in platform:
+if sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt"):
     from msvcrt import getch
     IS_WIN = True
 
@@ -203,7 +203,7 @@ if __name__ == '__main__':
         while True:
             if not thread_ns.is_alive():
                 break
-            if IS_WIN and ord(getch()) == 27:  # ESC:
+            if IS_WIN and ord(getch()) == 27:  # ESC
                 break
             time.sleep(0.1)
     except Exception as e:
