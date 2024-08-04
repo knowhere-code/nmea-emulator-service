@@ -97,7 +97,7 @@ class NMEAClient:
     def _get_total_clients(cls):
         return f"Total clients: {len(cls._clients)} {cls._clients}"
 
-    def _generate_nmea_sentence(self):
+    def _make_nmea_sentence(self):
         time_t = time.gmtime()
         hhmmssss = f'{time_t.tm_hour:02d}{time_t.tm_min:02d}{time_t.tm_sec:02d}.000'
         ddmmyy = time.strftime("%d%m%y", time_t)
@@ -115,9 +115,9 @@ class NMEAClient:
         return "\r\n".join(sentences).encode('ascii') + b'\r\n'
 
     def _send_nmea_sentences(self):
-        nmea_sentences = self._generate_nmea_sentence()
+        nmea_sentences = self._make_nmea_sentence()
         self._conn.sendall(nmea_sentences)
-        print(f"{datetime.datetime.now()}\t {self._ip}:{self._port} <-- RX: {nmea_sentences}")
+        print(f"{datetime.datetime.now()}\t {self._ip}:{self._port} <-- TX: {nmea_sentences}")
 
     def process(self):
         try:
