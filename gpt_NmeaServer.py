@@ -25,7 +25,7 @@ try:
     logger = logging.getLogger(__name__)
     logging.basicConfig(level=logging.DEBUG, filename=LOG_PATH, format='%(asctime)s %(levelname)s:%(message)s')
 except PermissionError as e:
-    pass
+    print(f"PermissionError: {e}")
 
 def print2(value, debug=True, error=False):
     print(value)
