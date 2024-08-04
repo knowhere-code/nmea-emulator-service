@@ -1,50 +1,53 @@
 #!/bin/bash
-# Скипт установки службы эмуляции NMEA на базе скрипта NmeaServer.py
+# Скрипт установки службы эмуляции NMEA на базе скрипта NmeaServer.py
 # Порт сервера NMEA определяется переменной PORT, SERVER_SCRIPT - путь до скрипта NmeaServer.py
 
+# Проверка на запуск скрипта от имени root
 if [ "$(id -u)" != 0 ]; then
-  echo "This script must be run as root. 'sudo $0'"
+  echo "This script must be run as root. Use 'sudo $0'"
   exit 1
 fi
 
-if [ ! -f ./NmeaServer.py ]
-then
-  echo "Not found NmeaServer.py script!"
+# Проверка наличия скрипта NmeaServer.py
+if [ ! -f ./NmeaServer.py ]; then
+  echo "NmeaServer.py script not found!"
   exit 1
 fi
 
-if ! which python3 &> /dev/null
-then
+# Проверка установки Python3
+if ! command -v python3 &> /dev/null; then
     echo "Python3 is not installed!"
     exit 1
 fi
 
-if ! which pip3 &> /dev/null
-then
+# Проверка установки pip3
+if ! command -v pip3 &> /dev/null; then
     echo "pip3 is not installed!"
     exit 1
 fi
 
-if ! pip3 list | grep pynmea2 &> /dev/null
-then
+# Проверка установки pynmea2
+if ! pip3 list | grep pynmea2 &> /dev/null; then
    echo "pynmea2 is not installed!"
    exit 1
 fi
 
 PORT=50005
 
-PYTHON_EXEC=$(which python3)
-SERVER_SCRIPT=$(pwd)/NmeaServer.py
+PYTHON_EXEC=$(command -v python3)
+SERVER_SCRIPT=$(realpath ./NmeaServer.py)
 SERVICE_CAPTION=nmea-emulator.service
+SERVICE_PATH=/etc/systemd/system/$SERVICE_CAPTION
 
-if [ -f /etc/systemd/system/$SERVICE_CAPTION ] 
-then
+# Проверка, установлен ли уже сервис
+if [ -f $SERVICE_PATH ]; then
     echo "$SERVICE_CAPTION is already installed!"
     systemctl status $SERVICE_CAPTION
     exit 1
 fi
 
-cat << EOF > /etc/systemd/system/$SERVICE_CAPTION
+# Создание файла службы
+cat << EOF > $SERVICE_PATH
 [Unit]
 Description=NMEA emulator script service
 After=network.target
@@ -58,6 +61,7 @@ RestartSec=30s
 WantedBy=multi-user.target
 EOF
 
+# Активация и запуск службы
 systemctl enable $SERVICE_CAPTION
 systemctl start $SERVICE_CAPTION
 systemctl status $SERVICE_CAPTION
