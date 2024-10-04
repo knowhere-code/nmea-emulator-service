@@ -11,6 +11,11 @@ sudo apt update
 sudo apt install pip3
 sudo pip3 intall pynmea2
 ```
+или
+
+```bash
+sudo pip3 install -r requirements.txt
+```
 
 Запуск сервиса в консольном режиме:
 
