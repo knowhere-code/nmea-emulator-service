@@ -10,6 +10,8 @@ import pynmea2
 import logging
 import select
 import signal
+import queue
+import keyboard
 
 IS_WIN = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
 DEFAULT_PORT = 5007
@@ -41,7 +43,7 @@ class ClientSet(set):
 
 
 class NMEAServer:
-    def __init__(self, host='', port=DEFAULT_PORT, clients=100, rmc=True, gsa=False, status="A", id="GP"):
+    def __init__(self, host='', port=DEFAULT_PORT, clients=100, rmc=True, gsa=False, status="A", id="GP", param=None):
         self._host = host
         self._port = port
         self._clients = clients
@@ -49,6 +51,7 @@ class NMEAServer:
         self._gsa = gsa
         self._status = status
         self._id = id
+        self._param = param
 
     def run(self):
         with socket.socket() as sock:
@@ -67,14 +70,14 @@ class NMEAServer:
                 if ready[0]:
                     conn, addr = sock.accept()
                     print2(f"Connection detected from {addr[0]}:{addr[1]}")
-                    client = NMEAClient(conn, addr, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id)
+                    client = NMEAClient(conn, addr, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id, param=self._param)
                     threading.Thread(target=client.process).start()
 
 
 class NMEAClient:
     _clients = ClientSet()
 
-    def __init__(self, conn, addr, rmc=True, gsa=False, status="A", id="GP"):
+    def __init__(self, conn, addr, rmc=True, gsa=False, status="A", id="GP", param=None):
         self._conn = conn
         self._addr = addr
         self._ip, self._port = addr
@@ -82,6 +85,7 @@ class NMEAClient:
         self.gsa = gsa
         self.status = status
         self.id = id
+        self.param = param
         NMEAClient._add_client(addr)
         print2(NMEAClient._get_total_clients())
 
@@ -118,6 +122,10 @@ class NMEAClient:
         nmea_sentences = self._make_nmea_sentence()
         self._conn.sendall(nmea_sentences)
         print(f"{datetime.datetime.now()}\t {self._ip}:{self._port} <-- TX: {nmea_sentences}")
+        if param.empty():
+            pass
+        else:
+            print(self.param.get())
 
     def process(self):
         try:
@@ -152,17 +160,23 @@ def exit_gracefully(signal, frame):
 
 signal.signal(signal.SIGINT, exit_gracefully)
 
+# Создаем очередь
+param = queue.Queue()
+param.put("V")
+
 if __name__ == '__main__':
     print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
     parser = create_parser()
     args = parser.parse_args()
     try:
-        ns = NMEAServer(port=args.port, rmc=args.rmc, gsa=args.gsa, status=args.status, id=args.id)
+        ns = NMEAServer(port=args.port, rmc=args.rmc, gsa=args.gsa, status=args.status, id=args.id, param=param)
         thread_ns = threading.Thread(target=ns.run, daemon=True)
         thread_ns.start()
         while thread_ns.is_alive():
             if IS_WIN and ord(getch()) == 27:  # ESC
                 break
+            k = keyboard.read_key()
+            print(k)
             time.sleep(0.1)
     except Exception as e:
         print2(e, debug=False, error=True)
