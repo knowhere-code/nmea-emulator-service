@@ -104,8 +104,7 @@ class NMEAClient:
     def _get_manual_rmc_status(self):
         if not self.param.empty():
             self.param.get() #очищаем очередь
-            if self.status == "A": self.status = "V" 
-            else: self.status = "A"
+            self.status = "V" if self.status == "A" else "A"
             print(f"New status \"{self.status}\" for RMC packet")
         
     def _make_nmea_sentence(self):
@@ -167,15 +166,15 @@ signal.signal(signal.SIGINT, exit_gracefully)
 
 if __name__ == '__main__':
     print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
+    print('Press hotkey Space to change status RMC packet')
     parser = create_parser()
     args = parser.parse_args()
-    # Создаем очередь
     param = queue.Queue()
+    keyboard.add_hotkey('space', lambda: param.put("V/A"))
     try:
         ns = NMEAServer(port=args.port, rmc=args.rmc, gsa=args.gsa, status=args.status, id=args.id, param=param)
         thread_ns = threading.Thread(target=ns.run, daemon=True)
         thread_ns.start()
-        keyboard.add_hotkey('space', lambda: param.put("V"))
         while thread_ns.is_alive():
             if IS_WIN and ord(getch()) == 27:  # ESC
                 break
