@@ -110,7 +110,7 @@ class NMEAClient:
         if self.rmc:
             if not self.param.empty():
                 self.status = self.param.get()
-                print(self.status)
+                print(f"New status \"{self.status}\" rmc packet")
             rmc = pynmea2.RMC(self.id, 'RMC', (
                 hhmmssss, self.status, '4916.45', 'N', '12311.12', 'W', '173.8', '231.8', ddmmyy, '005.2', 'W'))
             sentences.append(str(rmc).strip())
@@ -159,24 +159,21 @@ def exit_gracefully(signal, frame):
 
 signal.signal(signal.SIGINT, exit_gracefully)
 
-# Создаем очередь
-param = queue.Queue()
-param.put("V")
 
 if __name__ == '__main__':
     print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
     parser = create_parser()
     args = parser.parse_args()
+    # Создаем очередь
+    param = queue.Queue()
     try:
         ns = NMEAServer(port=args.port, rmc=args.rmc, gsa=args.gsa, status=args.status, id=args.id, param=param)
         thread_ns = threading.Thread(target=ns.run, daemon=True)
         thread_ns.start()
+        keyboard.add_hotkey('space', lambda: param.put("V"))
         while thread_ns.is_alive():
             if IS_WIN and ord(getch()) == 27:  # ESC
                 break
-            k = keyboard.read_key()
-            print(k)
-            param.put(k)
             time.sleep(0.1)
     except Exception as e:
         print2(e, debug=False, error=True)
