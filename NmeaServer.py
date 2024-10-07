@@ -101,6 +101,13 @@ class NMEAClient:
     def _get_total_clients(cls):
         return f"Total clients: {len(cls._clients)} {cls._clients}"
 
+    def _get_manual_rmc_status(self):
+        if not self.param.empty():
+            self.param.get() #очищаем очередь
+            if self.status == "A": self.status = "V" 
+            else: self.status = "A"
+            print(f"New status \"{self.status}\" for RMC packet")
+        
     def _make_nmea_sentence(self):
         time_t = time.gmtime()
         hhmmssss = f'{time_t.tm_hour:02d}{time_t.tm_min:02d}{time_t.tm_sec:02d}.000'
@@ -108,9 +115,7 @@ class NMEAClient:
 
         sentences = []
         if self.rmc:
-            if not self.param.empty():
-                self.status = self.param.get()
-                print(f"New status \"{self.status}\" rmc packet")
+            self._get_manual_rmc_status()
             rmc = pynmea2.RMC(self.id, 'RMC', (
                 hhmmssss, self.status, '4916.45', 'N', '12311.12', 'W', '173.8', '231.8', ddmmyy, '005.2', 'W'))
             sentences.append(str(rmc).strip())
