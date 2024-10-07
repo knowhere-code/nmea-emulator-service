@@ -123,7 +123,7 @@ class NMEAClient:
         try:
             while True:
                 threading.Timer(INTERVAL_TX_PACKET, self._send_nmea_sentences).run()
-        except socket.error as e:
+        except Exception as e:
             self._err = e
         finally:
             self._close()
