@@ -10,6 +10,7 @@
 sudo apt update
 sudo apt install pip3
 sudo pip3 intall pynmea2
+sudo pip3 intall keyboard
 ```
 или
 
