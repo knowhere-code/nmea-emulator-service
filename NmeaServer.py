@@ -108,6 +108,9 @@ class NMEAClient:
 
         sentences = []
         if self.rmc:
+            if not self.param.empty():
+                self.status = self.param.get()
+                print(self.status)
             rmc = pynmea2.RMC(self.id, 'RMC', (
                 hhmmssss, self.status, '4916.45', 'N', '12311.12', 'W', '173.8', '231.8', ddmmyy, '005.2', 'W'))
             sentences.append(str(rmc).strip())
@@ -122,10 +125,6 @@ class NMEAClient:
         nmea_sentences = self._make_nmea_sentence()
         self._conn.sendall(nmea_sentences)
         print(f"{datetime.datetime.now()}\t {self._ip}:{self._port} <-- TX: {nmea_sentences}")
-        if param.empty():
-            pass
-        else:
-            print(self.param.get())
 
     def process(self):
         try:
@@ -177,6 +176,7 @@ if __name__ == '__main__':
                 break
             k = keyboard.read_key()
             print(k)
+            param.put(k)
             time.sleep(0.1)
     except Exception as e:
         print2(e, debug=False, error=True)
