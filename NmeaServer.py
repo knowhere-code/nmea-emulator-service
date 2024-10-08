@@ -107,7 +107,7 @@ class NMEAClient(threading.Thread):
     def _get_total_clients(cls):
         return f"Total clients: {len(cls._clients)} {cls._clients}"
             
-    def change_rmc_status(self):
+    def toggle_rmc_status(self):
         self.status = "V" if self.status == "A" else "A"
         print(f"New status \"{self.status}\" for RMC packet ({self._addr})")
         
@@ -182,7 +182,7 @@ if __name__ == '__main__':
                 thread_list = [thread for thread in threading.enumerate() if thread.name.startswith('NMEAClient')]
                 if thread_list:
                     for thr in thread_list:
-                        thr.change_rmc_status()
+                        thr.toggle_rmc_status()
             time.sleep(0.1)
     except Exception as e:
         print2(e, debug=False, error=True)
