@@ -70,14 +70,22 @@ class NMEAServer:
                 if ready[0]:
                     conn, addr = sock.accept()
                     print2(f"Connection detected from {addr[0]}:{addr[1]}")
-                    client = NMEAClient(conn, addr, rmc=self._rmc, gsa=self._gsa, status=self._status, id=self._id, param=self._param)
-                    threading.Thread(target=client.process).start()
+                    client = NMEAClient(name=f"NMEAClient {addr}",
+                                        conn=conn, 
+                                        addr=addr,
+                                        rmc=self._rmc, 
+                                        gsa=self._gsa, 
+                                        status=self._status, 
+                                        id=self._id, 
+                                        param=self._param)
+                    client.start()
 
 
-class NMEAClient:
+class NMEAClient(threading.Thread):
     _clients = ClientSet()
 
-    def __init__(self, conn, addr, rmc=True, gsa=False, status="A", id="GP", param=None):
+    def __init__(self, conn=None, addr=None, rmc=True, gsa=False, status="A", id="GP", param=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._conn = conn
         self._addr = addr
         self._ip, self._port = addr
@@ -100,13 +108,11 @@ class NMEAClient:
     @classmethod
     def _get_total_clients(cls):
         return f"Total clients: {len(cls._clients)} {cls._clients}"
-
-    def _get_manual_rmc_status(self):
-        if not self.param.empty():
-            self.param.get() #очищаем очередь
-            if self.status == "A": self.status = "V" 
-            else: self.status = "A"
-            print(f"New status \"{self.status}\" for RMC packet")
+            
+    def change_rmc_status(self):
+        if self.status == "A": self.status = "V" 
+        else: self.status = "A"
+        print(f"New status \"{self.status}\" for RMC packet")
         
     def _make_nmea_sentence(self):
         time_t = time.gmtime()
@@ -115,7 +121,7 @@ class NMEAClient:
 
         sentences = []
         if self.rmc:
-            self._get_manual_rmc_status()
+            # self._get_manual_rmc_status()
             rmc = pynmea2.RMC(self.id, 'RMC', (
                 hhmmssss, self.status, '4916.45', 'N', '12311.12', 'W', '173.8', '231.8', ddmmyy, '005.2', 'W'))
             sentences.append(str(rmc).strip())
@@ -131,7 +137,7 @@ class NMEAClient:
         self._conn.sendall(nmea_sentences)
         print(f"{datetime.datetime.now()}\t {self._ip}:{self._port} <-- TX: {nmea_sentences}")
 
-    def process(self):
+    def run(self):
         try:
             while True:
                 threading.Timer(INTERVAL_TX_PACKET, self._send_nmea_sentences).run()
@@ -169,17 +175,19 @@ if __name__ == '__main__':
     print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
     parser = create_parser()
     args = parser.parse_args()
-    # Создаем очередь
-    param = queue.Queue()
     try:
         ns = NMEAServer(port=args.port, rmc=args.rmc, gsa=args.gsa, status=args.status, id=args.id, param=param)
-        thread_ns = threading.Thread(target=ns.run, daemon=True)
+        thread_ns = threading.Thread(name="NMEAServer", target=ns.run, daemon=True)
         thread_ns.start()
-        keyboard.add_hotkey('space', lambda: param.put("V"))
         while thread_ns.is_alive():
             if IS_WIN and ord(getch()) == 27:  # ESC
                 break
-            time.sleep(0.1)
+            thread_list = [thread for thread in threading.enumerate() if thread.name.startswith('NMEAClient')]
+            if thread_list:
+                if keyboard.read_key() == "space":
+                    for thr in thread_list:
+                        thr.change_rmc_status()
+            time.sleep(0.5)
     except Exception as e:
         print2(e, debug=False, error=True)
     finally:
