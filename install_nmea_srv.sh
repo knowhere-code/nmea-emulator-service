@@ -32,6 +32,12 @@ if ! pip3 list | grep pynmea2 &> /dev/null; then
    exit 1
 fi
 
+# Проверка установки pynmea2
+if ! pip3 list | grep keyboard &> /dev/null; then
+   echo "keyboard is not installed!"
+   exit 1
+fi
+
 PORT=50005
 
 PYTHON_EXEC=$(command -v python3)
