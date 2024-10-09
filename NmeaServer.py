@@ -42,7 +42,7 @@ class ClientSet(set):
 
 
 class NMEAServer:
-    def __init__(self, host='', port=DEFAULT_PORT, clients=100, rmc=True, gsa=False, status="A", id="GP"):
+    def __init__(self, host='', port=DEFAULT_PORT, clients=20, rmc=True, gsa=False, status="A", id="GP"):
         self._host = host
         self._port = port
         self._clients = clients
@@ -52,15 +52,14 @@ class NMEAServer:
         self._id = id
 
     def run(self):
-        with socket.socket() as sock:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             try:
                 print2(f"Starting NMEA server on port {self._port}...")
                 sock.bind((self._host, self._port))
                 sock.listen(self._clients)
-                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.setblocking(False)
             except socket.error as e:
-                print2(e, debug=False, error=True)
+                print2(e.strerror, debug=False, error=True)
                 return
             print2(f"NMEA server started on port {self._port}")
             while True:
