@@ -24,7 +24,7 @@ sudo pip3 install -r requirements.txt
 sudo python3 NmeaServer.py --rmc --gsa --port 50005
 ```
 
-По пробелу можно интерактивно изменять статус RMC пакета с A на V для одного клиента.
+По пробелу можно интерактивно изменять статус RMC пакета с A на V
 
 Установка сервиса как демона systemd.unit
 
