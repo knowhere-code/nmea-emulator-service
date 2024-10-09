@@ -105,10 +105,12 @@ class NMEAClient(threading.Thread):
     @classmethod
     def _get_total_clients(cls):
         return f"Total clients: {len(cls._clients)} {cls._clients}"
+
             
     def toggle_rmc_status(self):
         self.status = "V" if self.status == "A" else "A"
         print(f"New status \"{self.status}\" for RMC packet ({self._addr})")
+
         
     def _make_nmea_sentence(self):
         time_t = time.gmtime()
@@ -170,6 +172,7 @@ signal.signal(signal.SIGINT, exit_gracefully)
 
 if __name__ == '__main__':
     print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
+    print('Press hotkey Space to change status RMC packet')
     parser = create_parser()
     args = parser.parse_args()
     try:

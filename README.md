@@ -2,7 +2,7 @@
 
 Сервис для нужд тестирования генерирует пакеты RMC и GSA NMEA протокола, подключенным по TCP/IP клиентам.
 
-## Installation
+## Установка
 
 Установка зависимостей deb linux.
 
@@ -10,6 +10,12 @@
 sudo apt update
 sudo apt install pip3
 sudo pip3 intall pynmea2
+sudo pip3 intall keyboard
+```
+или
+
+```bash
+sudo pip3 install -r requirements.txt
 ```
 
 Запуск сервиса в консольном режиме:
@@ -17,6 +23,8 @@ sudo pip3 intall pynmea2
 ```sh
 sudo python3 NmeaServer.py --rmc --gsa --port 50005
 ```
+
+По пробелу можно интерактивно изменять статус RMC пакета с A на V для одного клиента.
 
 Установка сервиса как демона systemd.unit
 
