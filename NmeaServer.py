@@ -10,7 +10,6 @@ import pynmea2
 import logging
 import select
 import signal
-import queue
 import keyboard
 
 IS_WIN = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
@@ -148,6 +147,8 @@ class NMEAClient(threading.Thread):
         self._conn.close()
         NMEAClient._del_client(self._addr)
         print2(NMEAClient._get_total_clients())
+        # Close thread
+        sys.exit()
 
 
 def create_parser():
