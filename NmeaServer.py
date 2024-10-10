@@ -90,6 +90,7 @@ class NMEAClient(threading.Thread):
         self.gsa = gsa
         self.status = status
         self.id = id
+        self._lock = threading.RLock()
         NMEAClient._add_client(addr)
         print2(NMEAClient._get_total_clients())
 
@@ -107,8 +108,9 @@ class NMEAClient(threading.Thread):
 
             
     def toggle_rmc_status(self):
-        self.status = "V" if self.status == "A" else "A"
-        print(f"New status \"{self.status}\" for RMC packet ({self._addr})")
+        with self._lock:
+            self.status = "V" if self.status == "A" else "A"
+            print(f"New status \"{self.status}\" for RMC packet ({self._addr})")
 
         
     def _make_nmea_sentence(self):
