@@ -54,10 +54,13 @@ class NMEAServer:
     def run(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             try:
-                print2(f"Starting NMEA server on port {self._port}...")
+                # Флаг SO_REUSEADDR сообщает ядру о необходимости повторно использовать локальный сокет в состоянии TIME_WAIT, 
+                # не дожидаясь истечения его естественного тайм-аута.
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.bind((self._host, self._port))
                 sock.listen(self._clients)
                 sock.setblocking(False)
+                print2(f"Starting NMEA server on port {self._port}...")
             except socket.error as e:
                 print2(e.strerror, debug=False, error=True)
                 return
@@ -108,7 +111,7 @@ class NMEAClient(threading.Thread):
 
             
     def toggle_rmc_status(self):
-        with self._lock:
+        with self._lock: # Исключаем гонку потоков. 
             self.status = "V" if self.status == "A" else "A"
             print(f"New status \"{self.status}\" for RMC packet ({self._addr})")
 
