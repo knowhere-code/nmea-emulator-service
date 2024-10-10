@@ -56,11 +56,11 @@ class NMEAServer:
             try:
                 # Флаг SO_REUSEADDR сообщает ядру о необходимости повторно использовать локальный сокет в состоянии TIME_WAIT, 
                 # не дожидаясь истечения его естественного тайм-аута.
+                print2(f"Starting NMEA server on port {self._port}...")
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.bind((self._host, self._port))
                 sock.listen(self._clients)
                 sock.setblocking(False)
-                print2(f"Starting NMEA server on port {self._port}...")
             except socket.error as e:
                 print2(e.strerror, debug=False, error=True)
                 return
