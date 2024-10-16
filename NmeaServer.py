@@ -70,7 +70,8 @@ class NMEAServer:
                 if ready[0]:
                     conn, addr = sock.accept()
                     print2(f"Connection detected from {addr[0]}:{addr[1]}")
-                    client = NMEAClient(name=f"NMEAClient {addr}",
+                    client = NMEAClient(name=f"NMEAClient {addr}", 
+                                        daemon=True,
                                         conn=conn, 
                                         addr=addr,
                                         rmc=self._rmc, 
