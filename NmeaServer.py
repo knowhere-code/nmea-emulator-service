@@ -94,6 +94,7 @@ class NMEAClient(threading.Thread):
         self.gsa = gsa
         self.status = status
         self.id = id
+        self._err = ""
         self._lock = threading.RLock()
         NMEAClient._add_client(addr)
         print2(NMEAClient._get_total_clients())
@@ -175,23 +176,25 @@ def exit_gracefully(signal, frame):
 signal.signal(signal.SIGINT, exit_gracefully)
 
 
+def toggle_rmc_status():
+    thread_list = [thread for thread in threading.enumerate() if thread.name.startswith('NMEAClient')]
+    if thread_list:
+        for thr in thread_list:
+            thr.toggle_rmc_status()
+
+
 if __name__ == '__main__':
     print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
     print('Press hotkey Space to change status RMC packet')
-    parser = create_parser()
-    args = parser.parse_args()
+    keyboard.add_hotkey('space', toggle_rmc_status)
+    args = create_parser().parse_args()
     try:
         ns = NMEAServer(port=args.port, rmc=args.rmc, gsa=args.gsa, status=args.status, id=args.id)
         thread_ns = threading.Thread(name="NMEAServer", target=ns.run, daemon=True)
         thread_ns.start()
         while thread_ns.is_alive():
             if keyboard.read_key() == "esc": 
-                sys.exit()
-            if keyboard.read_key() == "space":
-                thread_list = [thread for thread in threading.enumerate() if thread.name.startswith('NMEAClient')]
-                if thread_list:
-                    for thr in thread_list:
-                        thr.toggle_rmc_status()
+                sys.exit(0)
             time.sleep(0.1)
     except Exception as e:
         print2(e, debug=False, error=True)
