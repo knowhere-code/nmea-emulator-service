@@ -15,12 +15,8 @@ import keyboard
 IS_WIN = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
 DEFAULT_PORT = 5007
 INTERVAL_TX_PACKET = 1  # sec
-
-if IS_WIN:
-    from msvcrt import getch
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LOG_PATH = f"{BASE_DIR}/nmea.log" if IS_WIN else "/var/log/nmea.log"
+LOG_PATH = f"{BASE_DIR}/nmea.log" 
 
 try:
     logger = logging.getLogger(__name__)
