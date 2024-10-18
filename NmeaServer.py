@@ -16,7 +16,7 @@ IS_WIN = sys.platform.startswith("win") or (sys.platform == "cli" and os.name ==
 DEFAULT_PORT = 5007
 INTERVAL_TX_PACKET = 1  # sec
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LOG_PATH = f"{BASE_DIR}/nmea.log" 
+LOG_PATH = f"{BASE_DIR}/nmea.log" if IS_WIN else "/var/log/nmea.log"
 
 try:
     logger = logging.getLogger(__name__)
