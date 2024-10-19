@@ -12,12 +12,11 @@
 ```sh
 sudo apt update
 sudo apt install pip3
+```
+```bash
 sudo pip3 intall pynmea2
 sudo pip3 intall keyboard
-```
 или
-
-```bash
 sudo pip3 install -r requirements.txt
 ```
 
@@ -27,7 +26,7 @@ sudo pip3 install -r requirements.txt
 sudo python3 NmeaServer.py --rmc --gsa --port 5007
 ```
 
-По пробелу можно интерактивно изменять статус RMC пакета с A на V
+По пробелу можно переключать статус RMC пакета с A на V
 
 Установка сервиса как демона systemd.unit
 
