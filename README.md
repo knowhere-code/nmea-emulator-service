@@ -13,6 +13,7 @@
 sudo apt update
 sudo apt install pip3
 ```
+
 ```bash
 sudo pip3 intall pynmea2
 sudo pip3 intall keyboard
@@ -41,7 +42,8 @@ telnet 127.0.0.1 5007
 ```
 
 options:
-``` 
+
+```text
   -h, --help  
   -p PORT, --port PORT                           Серверный порт для подключения клиентов (по умолчанию 5007)  
   -r, --rmc                                      Ключ генерации RMC пакетов  
