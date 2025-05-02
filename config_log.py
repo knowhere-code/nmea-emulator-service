@@ -1,20 +1,28 @@
 import logging
 import sys
+from logging.handlers import RotatingFileHandler
 
 # Создаем логгер
-logger = logging.getLogger('nmea_server')
+logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)  # Минимальный уровень для обработки
+
 
 # Форматтер для сообщений
 formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    '%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-# 1. Хендлер для записи в ФАЙЛ (только WARNING и выше)
-file_handler = logging.FileHandler('nmeasrv.log')
+# 1. Хендлер для записи в ФАЙЛ (только INFO и выше)
+file_handler = handler = RotatingFileHandler(
+    'nmeasrv.log',
+    maxBytes=5*1024*1024,
+    backupCount=3,
+    encoding='utf-8'
+)
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(formatter)
+
 
 # 2. Хендлер для вывода в КОНСОЛЬ (DEBUG и выше)
 console_handler = logging.StreamHandler(sys.stdout)
