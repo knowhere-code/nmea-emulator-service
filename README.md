@@ -9,10 +9,12 @@
 
 Установка зависимостей deb linux.
 
-```sh
+```bash
 sudo apt update
 sudo apt install pip3
 ```
+
+или
 
 ```bash
 sudo pip3 intall pynmea2
@@ -23,7 +25,7 @@ sudo pip3 install -r requirements.txt
 
 Пример запуска сервиса в консольном режиме:
 
-```sh
+```bash
 sudo python3 NmeaServer.py --rmc --gsa --port 5007
 ```
 
@@ -31,13 +33,13 @@ sudo python3 NmeaServer.py --rmc --gsa --port 5007
 
 Установка сервиса как демона systemd.unit
 
-```sh
+```bash
 sudo ./install_nmea_srv.sh
 ```
 
 Сервис будет доступен на сокете 127.0.0.1:5007
 
-```sh
+```bash
 telnet 127.0.0.1 5007
 ```
 
