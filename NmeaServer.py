@@ -7,30 +7,14 @@ import os
 import time
 import threading
 import pynmea2
-import logging
 import select
 import signal
 import keyboard
+from config_log import logger
 
 IS_WIN = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
 DEFAULT_PORT = 5007
 INTERVAL_TX_PACKET = 1  # sec
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LOG_PATH = f"{BASE_DIR}/nmea.log" if IS_WIN else "/var/log/nmea.log"
-
-try:
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(level=logging.DEBUG, filename=LOG_PATH, format='%(asctime)s %(levelname)s:%(message)s')
-except PermissionError as e:
-    print(f"PermissionError: {e}")
-
-def print2(value, debug=True, error=False):
-    print(value)
-    if debug:
-        logger.debug(value)
-    if error:
-        logger.error(value)
-
 
 class ClientSet(set):
     def __str__(self):
@@ -52,20 +36,20 @@ class NMEAServer:
             try:
                 # Флаг SO_REUSEADDR сообщает ядру о необходимости повторно использовать локальный сокет в состоянии TIME_WAIT, 
                 # не дожидаясь истечения его естественного тайм-аута.
-                print2(f"Starting NMEA server on port {self._port}...")
+                logger.info(f"Starting NMEA server on port {self._port}...")
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.bind((self._host, self._port))
                 sock.listen(self._clients)
                 sock.setblocking(False)
             except socket.error as e:
-                print2(e.strerror, debug=False, error=True)
+                logger.error(e.strerror)
                 return
-            print2(f"NMEA server started on port {self._port}")
+            logger.info(f"NMEA server started on port {self._port}")
             while True:
                 ready = select.select([sock], [], [], 1)
                 if ready[0]:
                     conn, addr = sock.accept()
-                    print2(f"Connection detected from {addr[0]}:{addr[1]}")
+                    logger.info(f"Connection detected from {addr[0]}:{addr[1]}")
                     client = NMEAClient(name=f"NMEAClient {addr}", 
                                         daemon=True,
                                         conn=conn, 
@@ -93,7 +77,7 @@ class NMEAClient(threading.Thread):
         self._err = ""
         self._lock = threading.RLock()
         NMEAClient._add_client(addr)
-        print2(NMEAClient._get_total_clients())
+        logger.info(NMEAClient._get_total_clients())
 
     @classmethod
     def _add_client(cls, addr):
@@ -147,10 +131,10 @@ class NMEAClient(threading.Thread):
 
     def _close(self):
         msg = f"Client [{self._ip}:{self._port}] connection closed ({self._err})"
-        print2(msg)
+        logger.info(msg)
         self._conn.close()
         NMEAClient._del_client(self._addr)
-        print2(NMEAClient._get_total_clients())
+        logger.info(NMEAClient._get_total_clients())
         # Close thread
         sys.exit()
 
@@ -193,6 +177,6 @@ if __name__ == '__main__':
                 sys.exit(0)
             time.sleep(0.1)
     except Exception as e:
-        print2(e, debug=False, error=True)
+        logger.error(e)
     finally:
-        print2("NMEA server stopped!")
+        logger.info("NMEA server stopped!")
