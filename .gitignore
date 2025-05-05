@@ -1,2 +1,3 @@
 *.log
 launch.json
+__pycache__

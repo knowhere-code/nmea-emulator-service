@@ -62,6 +62,8 @@ After=network.target
 ExecStart=${PYTHON_EXEC} ${SERVER_SCRIPT} --rmc --gsa --port $PORT
 Restart=always
 RestartSec=30s
+WorkingDirectory=${SERVER_SCRIPT}
+#StandardOutput=append:/var/log/nmeasrv.log
 
 [Install]
 WantedBy=multi-user.target
