@@ -86,6 +86,7 @@ async def keyboard_monitor():
             while True:
                 if sys.stdin.read(1) == ' ':
                     toggle_status()
+                await asyncio.sleep(0.1)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
