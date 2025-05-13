@@ -15,9 +15,9 @@ def generate_rmc():
     #$GPRMC, 064016.000, A, 4916.45, N, 12311.12, W ,173.8,231.8,130525, 005.2, W*67 
     
     #$GPRMC, 064032.648, A, 4807.038, N, 1131.000, E, 0.0, 0.0, 130525, , *0012 
-    nmea = f"GPRMC,{time},{current_status},{lat:.3f},{lat_dir},{lon:.3f},{lon_dir},0.0,0.0,{date},,*"
+    nmea = f"GPRMC,{time},{current_status},{lat:.3f},{lat_dir},{lon:.3f},{lon_dir},0.0,0.0,{date},,W"
     checksum = calculate_checksum(nmea)
-    return f"${nmea}{checksum}\r\n".encode()
+    return f"${nmea}*{checksum}\r\n".encode()
 
 def calculate_checksum(s):
     """Вычисление контрольной суммы NMEA"""
