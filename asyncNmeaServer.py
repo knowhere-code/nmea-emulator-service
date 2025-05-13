@@ -78,17 +78,15 @@ async def keyboard_monitor():
                 toggle_status()
             await asyncio.sleep(0.1)
     else:
-        import termios, tty
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setcbreak(fd)
-            while True:
-                if sys.stdin.read(1) == ' ':
-                    toggle_status()
-                await asyncio.sleep(0.1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        loop = asyncio.get_event_loop()
+        reader = asyncio.StreamReader()
+        protocol = asyncio.StreamReaderProtocol(reader)
+        await loop.connect_read_pipe(lambda: protocol, sys.stdin)
+        while True:
+            char = await reader.read(1)
+            if char == b' ':
+                toggle_status()
+
 
 async def cleanup():
     """Очистка подключений"""
