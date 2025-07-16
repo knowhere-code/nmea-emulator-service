@@ -123,7 +123,9 @@ class NMEAClient(threading.Thread):
     def run(self):
         try:
             while True:
-                threading.Timer(INTERVAL_TX_PACKET, self._send_nmea_sentences).run()
+                timer_start = time.perf_counter()
+                self._send_nmea_sentences()
+                time.sleep(max(INTERVAL_TX_PACKET - (time.perf_counter() - timer_start), 0))
         except Exception as e:
             self._err = e
         finally:
