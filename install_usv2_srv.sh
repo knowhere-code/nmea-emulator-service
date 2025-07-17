@@ -8,9 +8,9 @@ if [ "$(id -u)" != 0 ]; then
   exit 1
 fi
 
-# Проверка наличия скрипта NmeaServer.py
-if [ ! -f ./NmeaServer.py ]; then
-  echo "NmeaServer.py script not found!"
+# Проверка наличия скрипта Usv2.py
+if [ ! -f ./Usv2.py ]; then
+  echo "Usv2.py script not found!"
   exit 1
 fi
 
@@ -26,11 +26,6 @@ if ! command -v pip3 &> /dev/null; then
     exit 1
 fi
 
-# Проверка установки pynmea2
-if ! pip3 list | grep pynmea2 &> /dev/null; then
-   echo "pynmea2 is not installed!"
-   exit 1
-fi
 
 # Проверка установки keyboard
 if ! pip3 list | grep keyboard &> /dev/null; then
@@ -38,11 +33,11 @@ if ! pip3 list | grep keyboard &> /dev/null; then
    exit 1
 fi
 
-PORT=50005
+PORT=50006
 
 PYTHON_EXEC=$(command -v python3)
-SERVER_SCRIPT=$(realpath ./NmeaServer.py)
-SERVICE_CAPTION=nmea-emulator.service
+SERVER_SCRIPT=$(realpath ./Usv2.py)
+SERVICE_CAPTION=usv2-emulator.service
 SERVICE_PATH=/etc/systemd/system/$SERVICE_CAPTION
 
 # Проверка, установлен ли уже сервис
@@ -55,15 +50,15 @@ fi
 # Создание файла службы
 cat << EOF > $SERVICE_PATH
 [Unit]
-Description=NMEA emulator script service
+Description=Usv2 emulator script service
 After=network.target
 
 [Service]
-ExecStart=${PYTHON_EXEC} ${SERVER_SCRIPT} --rmc --gsa --port $PORT
+ExecStart=${PYTHON_EXEC} ${SERVER_SCRIPT} --port $PORT
 Restart=always
 RestartSec=30s
 WorkingDirectory=${SERVER_SCRIPT}
-#StandardOutput=append:/var/log/nmeasrv.log
+#StandardOutput=append:/var/log/usv2srv.log
 
 [Install]
 WantedBy=multi-user.target
