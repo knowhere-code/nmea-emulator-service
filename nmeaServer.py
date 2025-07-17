@@ -10,8 +10,9 @@ import pynmea2
 import select
 import signal
 import keyboard
-from config_log import logger
+from config_log import setup_logger
 
+logger = setup_logger()
 IS_WIN = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
 DEFAULT_PORT = 5007
 INTERVAL_TX_PACKET = 1  # sec
@@ -36,15 +37,15 @@ class NMEAServer:
             try:
                 # Флаг SO_REUSEADDR сообщает ядру о необходимости повторно использовать локальный сокет в состоянии TIME_WAIT, 
                 # не дожидаясь истечения его естественного тайм-аута.
-                logger.info(f"Starting NMEA server on port {self._port}...")
+                logger.info(f"Starting NMEA Server on port {self._port}...")
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.bind((self._host, self._port))
                 sock.listen(self._clients)
                 sock.setblocking(False)
             except socket.error as e:
-                logger.error(e.strerror)
+                logger.error(e.strerror, exc_info=True)
                 return
-            logger.info(f"NMEA server started on port {self._port}")
+            logger.info(f"NMEA Server started on port {self._port}")
             while True:
                 ready = select.select([sock], [], [], 1)
                 if ready[0]:
@@ -179,6 +180,6 @@ if __name__ == '__main__':
                 sys.exit(0)
             time.sleep(0.1)
     except Exception as e:
-        logger.error(e)
+        logger.error(e, exc_info=True)
     finally:
-        logger.info("NMEA server stopped!")
+        logger.info("NMEA Server stopped!")

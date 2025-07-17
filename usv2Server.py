@@ -9,7 +9,9 @@ import threading
 import select
 import signal
 import keyboard
-from config_log import logger
+from config_log import setup_logger
+
+logger = setup_logger("usv2srv.log")
 
 IS_WIN = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
 DEFAULT_PORT = 5008
@@ -33,15 +35,15 @@ class USV2Server:
             try:
                 # Флаг SO_REUSEADDR сообщает ядру о необходимости повторно использовать локальный сокет в состоянии TIME_WAIT, 
                 # не дожидаясь истечения его естественного тайм-аута.
-                logger.info(f"Starting USV2 server on port {self._port}...")
+                logger.info(f"Starting USV2 Server on port {self._port}...")
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.bind((self._host, self._port))
                 sock.listen(self._clients)
                 sock.setblocking(True)
             except socket.error as e:
-                logger.error(e.strerror)
+                logger.error(e.strerror, exc_info=True)
                 return
-            logger.info(f"USV2 server started on port {self._port}")
+            logger.info(f"USV2 Server started on port {self._port}")
             while True:
                 ready = select.select([sock], [], [], 1)
                 if ready[0]:
@@ -97,10 +99,10 @@ class USV2Client(threading.Thread):
                 if ascii:
                     s += f"{byte}"
                 else:
-                    s += "_{0:02}".format(byte)
+                    s += f"_{byte:02X}"
             return s.lstrip('_')
         except Exception as e:
-            logger.exception(e)
+            logger.error(e, exc_info=True)
             
             
     def toggle_clock_status(self):
@@ -142,7 +144,7 @@ class USV2Client(threading.Thread):
             self._conn.send(tx)
             logger.info(f"{datetime.datetime.now()}\t{self._ip}:{self._port} <- TX: {self.bytes2str(tx)}")
         except Exception as e:
-            logger.exception(e)
+            logger.error(e, exc_info=True)
 
     def make_dt_packet(self):
         # self._conn.send(b'\x73\x0A\x14\x03\x31\x13\x41\x05\x00\x00\x00\x21')
@@ -171,10 +173,10 @@ class USV2Client(threading.Thread):
 
     def _close(self):
         msg = f"Client [{self._ip}:{self._port}] connection closed ({self._err})"
-        logger.exception(msg)
+        logger.info(msg)
         self._conn.close()
         USV2Client._del_client(self._addr)
-        logger.exception(USV2Client._get_total_clients())
+        logger.info(USV2Client._get_total_clients())
         # Close thread
         sys.exit()
 
@@ -213,6 +215,6 @@ if __name__ == '__main__':
                 sys.exit(0)
             time.sleep(0.1)
     except Exception as e:
-        logger.error(e)
+        logger.error(e, exc_info=True)
     finally:
-        logger.info("USV2 server stopped!")
+        logger.info("USV2 Server stopped!")
