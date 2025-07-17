@@ -13,7 +13,7 @@ from config_log import logger
 
 IS_WIN = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
 DEFAULT_PORT = 5008
-INTERVAL_TX_PACKET = 1  # sec
+
 
 class ClientSet(set):
     def __str__(self):
@@ -21,11 +21,11 @@ class ClientSet(set):
 
 
 class USV2Server:
-    def __init__(self, host='', port=DEFAULT_PORT, clients=20, status=True):
+    def __init__(self, host='', port=DEFAULT_PORT, clients=20):
         self._host = host
         self._port = port
         self._clients = clients
-        self._status = status
+
 
 
     def run(self):
@@ -33,7 +33,7 @@ class USV2Server:
             try:
                 # Флаг SO_REUSEADDR сообщает ядру о необходимости повторно использовать локальный сокет в состоянии TIME_WAIT, 
                 # не дожидаясь истечения его естественного тайм-аута.
-                logger.info(f"Starting NMEA server on port {self._port}...")
+                logger.info(f"Starting USV2 server on port {self._port}...")
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.bind((self._host, self._port))
                 sock.listen(self._clients)
@@ -66,6 +66,7 @@ class USV2Client(threading.Thread):
         self._err = ""
         self._status_clock = b'\x00'
         self._lock = threading.RLock()
+        
         USV2Client._add_client(addr)
         logger.info(USV2Client._get_total_clients())
 
@@ -92,14 +93,14 @@ class USV2Client(threading.Thread):
             s = ""
             if ascii:
                 input_data = input_data.decode("ascii")
-            for b in input_data:
+            for byte in input_data:
                 if ascii:
-                    s += "{0}".format(b)
+                    s += f"{byte}"
                 else:
-                    s += "_{0:02X}".format(b)
+                    s += "_{0:02}".format(byte)
             return s.lstrip('_')
         except Exception as e:
-            print(e)
+            logger.exception(e)
             
             
     def toggle_clock_status(self):
@@ -121,7 +122,7 @@ class USV2Client(threading.Thread):
         hh = dt.strftime("%H")  # Часы (12)
         mm = dt.strftime("%M")  # Минуты (30)
         ss = dt.strftime("%S")  # Секунды (45)
-        bcd_bytes = bytes([
+        dt_bcd_bytes = bytes([
             self.to_bcd(int(YY)),  # 23 → 0x23
             self.to_bcd(int(MM)),  # 10 → 0x10
             self.to_bcd(int(DD)),  # 15 → 0x15
@@ -129,26 +130,27 @@ class USV2Client(threading.Thread):
             self.to_bcd(int(mm)),  # 30 → 0x30
             self.to_bcd(int(ss))   # 45 → 0x45
         ])
-        return bcd_bytes 
+        return dt_bcd_bytes 
        
-        
     def _calc_crc(self, data):
         crc = sum(data[2:]) & 0xFF
         return bytes([crc])
-        
-            
-    def _send_date_time(self):
+         
+    def _send_dt_packet(self):
         try:
-            dtb = self._get_date_time_now()
-                            #73_ 0A_ 14_ 03_ 31_ 13_ 41_ 05_ 00_ 00_ 80_ 21
-            # self._conn.send(b'\x73\x0A\x14\x03\x31\x13\x41\x05\x00\x00\x00\x21')
-            data = b'\x73\x0A' + dtb + b'\x00\x00' + self._status_clock
-            crc = self._calc_crc(data)
-            tx = data + crc
+            tx = self.make_dt_packet()
             self._conn.send(tx)
             logger.info(f"{datetime.datetime.now()}\t{self._ip}:{self._port} <- TX: {self.bytes2str(tx)}")
         except Exception as e:
             logger.exception(e)
+
+    def make_dt_packet(self):
+        # self._conn.send(b'\x73\x0A\x14\x03\x31\x13\x41\x05\x00\x00\x00\x21')
+        dtb = self._get_date_time_now()
+        data = b'\x73\x0A' + dtb + b'\x00\x00' + self._status_clock
+        crc = self._calc_crc(data)
+        tx = data + crc
+        return tx
       
             
     def run(self):
@@ -160,8 +162,7 @@ class USV2Client(threading.Thread):
                 if not rx:
                     break
                 if b's' in rx:
-                    self._send_date_time()
-                
+                    self._send_dt_packet()    
         except Exception as e:
             self._err = e
         finally:
