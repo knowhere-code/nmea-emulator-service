@@ -1,6 +1,6 @@
 #!/bin/bash
-# Скрипт установки службы эмуляции USV2 на базе скрипта
-# Порт сервера NMEA определяется переменной PORT, SERVER_SCRIPT - путь до скрипта
+# Скрипт установки службы эмуляции USV2 на базе скрипта usv2Server
+# Порт сервера NMEA определяется переменной PORT, SERVER_SCRIPT - путь до скрипта usv2Server
 
 # Проверка на запуск скрипта от имени root
 if [ "$(id -u)" != 0 ]; then
@@ -8,9 +8,9 @@ if [ "$(id -u)" != 0 ]; then
   exit 1
 fi
 
-# Проверка наличия скрипта Usv2.py
-if [ ! -f ./Usv2.py ]; then
-  echo "Usv2.py script not found!"
+# Проверка наличия скрипта usv2Server.py
+if [ ! -f ./usv2Server.py ]; then
+  echo "usv2Server.py script not found!"
   exit 1
 fi
 
@@ -36,7 +36,7 @@ fi
 PORT=50006
 
 PYTHON_EXEC=$(command -v python3)
-SERVER_SCRIPT=$(realpath ./Usv2.py)
+SERVER_SCRIPT=$(realpath ./usv2Server.py)
 SERVICE_CAPTION=usv2-emulator.service
 SERVICE_PATH=/etc/systemd/system/$SERVICE_CAPTION
 
