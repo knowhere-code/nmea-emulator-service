@@ -1,6 +1,6 @@
 #!/bin/bash
-# Скрипт установки службы эмуляции NMEA на базе скрипта NmeaServer.py
-# Порт сервера NMEA определяется переменной PORT, SERVER_SCRIPT - путь до скрипта NmeaServer.py
+# Скрипт установки службы эмуляции NMEA на базе скрипта nmeaServer.py
+# Порт сервера NMEA определяется переменной PORT, SERVER_SCRIPT - путь до скрипта nmeaServer.py
 
 # Проверка на запуск скрипта от имени root
 if [ "$(id -u)" != 0 ]; then
@@ -8,9 +8,9 @@ if [ "$(id -u)" != 0 ]; then
   exit 1
 fi
 
-# Проверка наличия скрипта NmeaServer.py
-if [ ! -f ./NmeaServer.py ]; then
-  echo "NmeaServer.py script not found!"
+# Проверка наличия скрипта nmeaServer.py
+if [ ! -f ./nmeaServer.py ]; then
+  echo "nmeaServer.py script not found!"
   exit 1
 fi
 
@@ -41,7 +41,7 @@ fi
 PORT=50005
 
 PYTHON_EXEC=$(command -v python3)
-SERVER_SCRIPT=$(realpath ./NmeaServer.py)
+SERVER_SCRIPT=$(realpath ./nmeaServer.py)
 SERVICE_CAPTION=nmea-emulator.service
 SERVICE_PATH=/etc/systemd/system/$SERVICE_CAPTION
 
