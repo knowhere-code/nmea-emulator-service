@@ -1,6 +1,6 @@
 #!/bin/bash
-# Скрипт установки службы эмуляции NMEA на базе скрипта NmeaServer.py
-# Порт сервера NMEA определяется переменной PORT, SERVER_SCRIPT - путь до скрипта NmeaServer.py
+# Скрипт установки службы эмуляции USV2 на базе скрипта
+# Порт сервера NMEA определяется переменной PORT, SERVER_SCRIPT - путь до скрипта
 
 # Проверка на запуск скрипта от имени root
 if [ "$(id -u)" != 0 ]; then
@@ -50,7 +50,7 @@ fi
 # Создание файла службы
 cat << EOF > $SERVICE_PATH
 [Unit]
-Description=Usv2 emulator script service
+Description=USV2 emulator script service
 After=network.target
 
 [Service]
