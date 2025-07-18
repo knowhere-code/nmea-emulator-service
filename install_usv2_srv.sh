@@ -39,6 +39,7 @@ PYTHON_EXEC=$(command -v python3)
 SERVER_SCRIPT=$(realpath ./usv2Server.py)
 SERVICE_CAPTION=usv2-emulator.service
 SERVICE_PATH=/etc/systemd/system/$SERVICE_CAPTION
+WORKDIR=$(dirname "$(realpath "./usv2Server.py")")
 
 # Проверка, установлен ли уже сервис
 if [ -f $SERVICE_PATH ]; then
@@ -57,7 +58,7 @@ After=network.target
 ExecStart=${PYTHON_EXEC} ${SERVER_SCRIPT} --port $PORT
 Restart=always
 RestartSec=30s
-WorkingDirectory=${SERVER_SCRIPT}
+WorkingDirectory=${WORKDIR}
 #StandardOutput=append:/var/log/usv2srv.log
 
 [Install]
@@ -67,4 +68,7 @@ EOF
 # Активация и запуск службы
 systemctl enable $SERVICE_CAPTION
 systemctl start $SERVICE_CAPTION
-systemctl status $SERVICE_CAPTION
+systemctl status $SERVICE_CAPTION --no-pager
+
+echo "Для остановки: sudo systemctl stop $SERVICE_NAME"
+echo "Для просмотра логов: journalctl -u $SERVICE_NAME -f"
