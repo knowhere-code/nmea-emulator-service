@@ -4,6 +4,7 @@
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 
 Сервис **NMEA Emulator Service** для нужд тестирования генерирует пакеты RMC и GSA NMEA протокола, подключенным по TCP/IP клиентам.
+Сервис **УСВ-2** для нужд тестирования. Отдает время в протоколе УСВ-2.
 
 ## Установка
 
@@ -23,24 +24,28 @@ sudo pip3 intall keyboard
 sudo pip3 install -r requirements.txt
 ```
 
-Пример запуска сервиса в консольном режиме:
+Пример запуска сервисов в консольном режиме:
 
 ```bash
-sudo python3 NmeaServer.py --rmc --gsa --port 5007
+sudo python3 nmeaServer.py --rmc --gsa --port 5007
 ```
 
 По пробелу можно переключать статус RMC пакета с A на V
 
-Установка сервиса как демона systemd.unit
+```bash
+sudo python3 usv2Server.py --port 5008
+```
+
+Установка сервиса NMEA как демона systemd.unit
 
 ```bash
 sudo ./install_nmea_srv.sh
 ```
 
-Сервис будет доступен на сокете 127.0.0.1:5007
+Сервис будет доступен на сокете 127.0.0.1:50005
 
 ```bash
-telnet 127.0.0.1 5007
+telnet 127.0.0.1 50005
 ```
 
 options:
@@ -52,4 +57,23 @@ options:
   -g, --gsa                                      Ключ генерации GSA пакетов  
   -s {A,V}, --status {A,V}                       Генерация пакетов RMC c A - валидным статусом, V - невалидный статус (по умолчанию А) 
   -i {GP,GN,GL,BD,GA}, --id {GP,GN,GL,BD,GA}     Индификатор GPS системы (по умолчанию GP)  
+```
+
+Установка сервиса УСВ2 как демона systemd.unit
+
+```bash
+sudo ./install_usv2_srv.sh
+```
+
+Сервис будет доступен на сокете 127.0.0.1:50006
+
+```bash
+telnet 127.0.0.1 50006
+```
+
+options:
+
+```text
+  -h, --help  
+  -p PORT, --port PORT                           Серверный порт для подключения клиентов (по умолчанию 5008)  
 ```
