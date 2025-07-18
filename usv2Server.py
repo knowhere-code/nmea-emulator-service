@@ -142,7 +142,7 @@ class USV2Client(threading.Thread):
         try:
             tx = self.make_dt_packet()
             self._conn.send(tx)
-            logger.info(f"{datetime.datetime.now()}\t{self._ip}:{self._port} <- TX: {self.bytes2str(tx)}")
+            logger.info(f"{self._ip}:{self._port} <- TX: {self.bytes2str(tx)}")
         except Exception as e:
             logger.error(e, exc_info=True)
 
@@ -160,10 +160,10 @@ class USV2Client(threading.Thread):
             while True:
                 # метод блокирующий, а это значит что к if not tmp перейдет только после того, как клиент отвалится и вернется 0 байт
                 rx = self._conn.recv(1024)
-                logger.info(f"{datetime.datetime.now()}\t{self._ip}:{self._port} -> RX: {self.bytes2str(rx)}")
+                logger.info(f"{self._ip}:{self._port} -> RX: {self.bytes2str(rx)}")
                 if not rx:
                     break
-                if b's' in rx:
+                if b's' in rx: # 0x73 = s
                     self._send_dt_packet()    
         except Exception as e:
             self._err = e

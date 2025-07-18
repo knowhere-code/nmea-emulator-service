@@ -96,7 +96,7 @@ class NMEAClient(threading.Thread):
     def toggle_rmc_status(self):
         with self._lock: # Исключаем гонку потоков. 
             self.status = "V" if self.status == "A" else "A"
-            print(f"New status \"{self.status}\" for RMC packet ({self._addr})")
+            logger.debug(f"New status \"{self.status}\" for RMC packet ({self._addr})")
 
         
     def _make_nmea_sentence(self):
@@ -119,7 +119,7 @@ class NMEAClient(threading.Thread):
     def _send_nmea_sentences(self):
         nmea_sentences = self._make_nmea_sentence()
         self._conn.sendall(nmea_sentences)
-        print(f"{datetime.datetime.now()}\t {self._ip}:{self._port} <-- TX: {nmea_sentences}")
+        logger.debug(f"{self._ip}:{self._port} <-- TX: {nmea_sentences}")
 
     def run(self):
         try:
