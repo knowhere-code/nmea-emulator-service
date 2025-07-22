@@ -22,8 +22,10 @@ class ClientSet(set):
         return " ".join(f"[{v[0]}:{v[1]}]" for v in self)
 
 
-class NMEAServer:
-    def __init__(self, host='', port=DEFAULT_PORT, clients=20, rmc=True, gsa=False, status="A", id="GP"):
+class NMEAServer(threading.Thread):
+    def __init__(self, host='', port=DEFAULT_PORT, clients=20, 
+                 rmc=True, gsa=False, status="A", id="GP", *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._host = host
         self._port = port
         self._clients = clients
@@ -172,10 +174,10 @@ if __name__ == '__main__':
     keyboard.add_hotkey('space', toggle_rmc_status)
     args = create_parser().parse_args()
     try:
-        ns = NMEAServer(port=args.port, rmc=args.rmc, gsa=args.gsa, status=args.status, id=args.id)
-        thread_ns = threading.Thread(name="NMEAServer", target=ns.run, daemon=True)
-        thread_ns.start()
-        while thread_ns.is_alive():
+        server = NMEAServer(name="NMEAServer", daemon=True, port=args.port, 
+                            rmc=args.rmc, gsa=args.gsa, status=args.status, id=args.id)
+        server.start()
+        while server.is_alive():
             if keyboard.read_key() == "esc": 
                 sys.exit(0)
             time.sleep(0.1)

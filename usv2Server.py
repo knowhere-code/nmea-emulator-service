@@ -22,8 +22,10 @@ class ClientSet(set):
         return " ".join(f"[{v[0]}:{v[1]}]" for v in self)
 
 
-class USV2Server:
-    def __init__(self, host='', port=DEFAULT_PORT, clients=20):
+class USV2Server(threading.Thread):
+    
+    def __init__(self, host='', port=DEFAULT_PORT, clients=20, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._host = host
         self._port = port
         self._clients = clients
@@ -207,10 +209,9 @@ if __name__ == '__main__':
     keyboard.add_hotkey('space', toggle_clock_status)
     args = create_parser().parse_args()
     try:
-        ns = USV2Server(port=args.port)
-        thread_ns = threading.Thread(name="USV2Server", target=ns.run, daemon=True)
-        thread_ns.start()
-        while thread_ns.is_alive():
+        server = USV2Server(name="USV2Server", port=args.port, daemon=True)
+        server.start()
+        while server.is_alive():
             if keyboard.read_key() == "esc": 
                 sys.exit(0)
             time.sleep(0.1)
