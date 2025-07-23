@@ -171,12 +171,18 @@ def toggle_rmc_status():
         for thr in thread_list:
             thr.toggle_rmc_status()
 
+def keyhandler():
+    try:
+        keyboard.add_hotkey('space', toggle_rmc_status)
+    except ImportError:
+        logger.info("Module keyboard work only for root user!")
+        
 
 if __name__ == '__main__':
     if os.getppid() != 1:  # если родительский процесс - не  init/systemd
         print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
         print('Press hotkey Space to change status RMC packet')
-        keyboard.add_hotkey('space', toggle_rmc_status)
+        keyhandler()
     args = create_parser().parse_args()
     try:
         server = NMEAServer(name="NMEAServer", daemon=True, port=args.port, 
