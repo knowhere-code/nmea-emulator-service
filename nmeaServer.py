@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import argparse
-import datetime
 import socket
 import sys
 import os
@@ -9,10 +8,15 @@ import threading
 import pynmea2
 import select
 import signal
-import keyboard
 from config_log import setup_logger
 
 logger = setup_logger()
+
+try:
+    import keyboard
+except ImportError as e:
+    logger.error(e)
+    
 IS_WIN = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
 DEFAULT_PORT = 5007
 INTERVAL_TX_PACKET = 1  # sec
@@ -169,16 +173,17 @@ def toggle_rmc_status():
 
 
 if __name__ == '__main__':
-    print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
-    print('Press hotkey Space to change status RMC packet')
-    keyboard.add_hotkey('space', toggle_rmc_status)
+    if os.getppid() != 1:  # если родительский процесс - не  init/systemd
+        print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
+        print('Press hotkey Space to change status RMC packet')
+        keyboard.add_hotkey('space', toggle_rmc_status)
     args = create_parser().parse_args()
     try:
         server = NMEAServer(name="NMEAServer", daemon=True, port=args.port, 
                             rmc=args.rmc, gsa=args.gsa, status=args.status, id=args.id)
         server.start()
         while server.is_alive():
-            if keyboard.read_key() == "esc": 
+            if IS_WIN and keyboard.read_key() == "esc": 
                 sys.exit(0)
             time.sleep(0.1)
     except Exception as e:

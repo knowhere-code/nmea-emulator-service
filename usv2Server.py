@@ -8,10 +8,15 @@ import time
 import threading
 import select
 import signal
-import keyboard
 from config_log import setup_logger
 
 logger = setup_logger("usv2srv.log")
+
+try:
+    import keyboard
+except ImportError as e:
+    logger.error(e)
+
 
 IS_WIN = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
 DEFAULT_PORT = 5008
@@ -204,15 +209,16 @@ def toggle_clock_status():
 
 
 if __name__ == '__main__':
-    print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
-    print('Press hotkey Space to change status time USV2')
-    keyboard.add_hotkey('space', toggle_clock_status)
+    if os.getppid() != 1:  # если запущен не как демон
+        print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
+        print('Press hotkey Space to change status clock USV2')
+        keyboard.add_hotkey('space', toggle_clock_status)
     args = create_parser().parse_args()
     try:
         server = USV2Server(name="USV2Server", port=args.port, daemon=True)
         server.start()
         while server.is_alive():
-            if keyboard.read_key() == "esc": 
+            if IS_WIN and keyboard.read_key() == "esc": 
                 sys.exit(0)
             time.sleep(0.1)
     except Exception as e:
