@@ -207,12 +207,17 @@ def toggle_clock_status():
         for thr in thread_list:
             thr.toggle_clock_status()
 
+def keyhandler():
+    try:
+        keyboard.add_hotkey('space', toggle_clock_status)
+    except ImportError:
+        logger.warning("Module keyboard work only for root user!")
 
 if __name__ == '__main__':
     if os.getppid() != 1:  # если запущен не как демон
         print('Press ESC to exit' if IS_WIN else 'Press CTRL+C to exit')
         print('Press hotkey Space to change status clock USV2')
-        keyboard.add_hotkey('space', toggle_clock_status)
+        keyhandler()
     args = create_parser().parse_args()
     try:
         server = USV2Server(name="USV2Server", port=args.port, daemon=True)

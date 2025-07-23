@@ -175,7 +175,7 @@ def keyhandler():
     try:
         keyboard.add_hotkey('space', toggle_rmc_status)
     except ImportError:
-        logger.info("Module keyboard work only for root user!")
+        logger.warning("Module keyboard work only for root user!")
         
 
 if __name__ == '__main__':
